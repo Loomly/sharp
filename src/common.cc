@@ -112,6 +112,9 @@ namespace sharp {
   bool IsWebp(std::string const &str) {
     return EndsWith(str, ".webp") || EndsWith(str, ".WEBP");
   }
+  bool IsGif(std::string const &str) {
+    return EndsWith(str, ".gif") || EndsWith(str, ".GIF");
+  }
   bool IsTiff(std::string const &str) {
     return EndsWith(str, ".tif") || EndsWith(str, ".tiff") || EndsWith(str, ".TIF") || EndsWith(str, ".TIFF");
   }
@@ -239,6 +242,7 @@ namespace sharp {
   */
   bool ImageTypeSupportsPage(ImageType imageType) {
     return
+      imageType == ImageType::WEBP ||
       imageType == ImageType::GIF ||
       imageType == ImageType::TIFF ||
       imageType == ImageType::HEIF ||
@@ -396,6 +400,34 @@ namespace sharp {
   }
 
   /*
+    Set animation properties if necessary.
+    Non-provided properties will be loaded from image and propagated back to caller.
+  */
+  VImage SetAnimationProperties(VImage image, int *pageHeight, std::vector<int> *delay, int *loop) {
+    if (*pageHeight == 0 && image.get_typeof(VIPS_META_PAGE_HEIGHT) == G_TYPE_INT) {
+      *pageHeight = image.get_int(VIPS_META_PAGE_HEIGHT);
+    }
+
+    if (delay == nullptr && image.get_typeof("delay") == VIPS_TYPE_ARRAY_INT) {
+      delay = new std::vector<int>(image.get_array_int("delay"));
+    }
+
+    if (*loop == -1 && image.get_typeof("loop") == G_TYPE_INT) {
+      *loop = image.get_int("loop");
+    }
+
+    if (*pageHeight == 0) return image;
+
+    VImage copy = image.copy();
+
+    copy.set(VIPS_META_PAGE_HEIGHT, *pageHeight);
+    if (delay != nullptr) copy.set("delay", *delay);
+    if (*loop != -1) copy.set("loop", *loop);
+
+    return copy;
+  }
+
+  /*
     Does this image have a non-default density?
   */
   bool HasDensity(VImage image) {
@@ -432,6 +464,10 @@ namespace sharp {
     } else if (imageType == ImageType::WEBP) {
       if (image.width() > 16383 || image.height() > 16383) {
         throw vips::VError("Processed image is too large for the WebP format");
+      }
+    } else if (imageType == ImageType::GIF) {
+      if (image.width() > 65535 || image.height() > 65535) {
+        throw vips::VError("Processed image is too large for the GIF format");
       }
     }
   }

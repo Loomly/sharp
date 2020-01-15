@@ -86,9 +86,6 @@ class MetadataWorker : public Nan::AsyncWorker {
       if (image.get_typeof("heif-primary") == G_TYPE_INT) {
         baton->pagePrimary = image.get_int("heif-primary");
       }
-      if (image.get_typeof("delay") == VIPS_TYPE_ARRAY_INT) {
-        baton->delay = new std::vector<int>(image.get_array_int("delay"));
-      }
       if (image.get_typeof("loop") == G_TYPE_INT) {
         baton->loop = image.get_int("loop");
       }

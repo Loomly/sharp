@@ -66,7 +66,6 @@ struct MetadataBaton {
     pageHeight(0),
     loop(-1),
     pagePrimary(-1),
-    delay(nullptr),
     hasProfile(false),
     hasAlpha(false),
     orientation(0),

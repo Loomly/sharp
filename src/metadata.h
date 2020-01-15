@@ -39,7 +39,6 @@ struct MetadataBaton {
   int loop;
   std::vector<int> delay;
   int pagePrimary;
-  std::vector<int> *delay;
   int loop;
   bool hasProfile;
   bool hasAlpha;
